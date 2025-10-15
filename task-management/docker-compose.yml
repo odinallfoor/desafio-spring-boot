@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+ openapi-validator:
+  image: openapitools/openapi-generator-cli:v7.5.0
+  volumes:
+   - ./:/local
+  working_dir: /local
+  command: ["validate", "-i", "/local/openapi.json"]
+
+
+ openapi-stubs:
+  image: openapitools/openapi-generator-cli:v7.5.0
+  volumes:
+   - ./:/local
+  working_dir: /local
+  command: [
+      "generate",
+      "-i", "/local/openapi.json",
+      "-g", "spring",
+      "-o", "/local/generated",
+      "--additional-properties", "interfaceOnly=true,useSpringBoot3=true,dateLibrary=java8"
+    ]
+ # 1.- Servicio de la Aplicacion Java/Spring Boot
+ # Es el ambiente de ejecucion con Maven y JDK 17.
+ app:
+  # Version de Maven 3.8.5 que incluye OpenJDK 17.
+  image: maven:3.8.5-openjdk-17-slim
+  container_name: task-manager-app
+  working_dir: /app
+  
+  volumes:
+   - .:/app
+   - maven_cache:/root/.m2
+   
+  ports:
+   - "8080:8080"
+  # Se asegura que se levante la base de datos primero.
+  depends_on:
+   - db
+ # 2.- Servicio de Base de Datos PostgreSQL
+ # Base de datos Local.
+ db:
+  # Imagen Oficial, Version 14 Ligera
+  image: postgres:14-alpine
+  container_name: task-manager-db
+  
+  # Variables de Entorno para las credenciales de la base de datos.
+  environment:
+   POSTGRES_USER: user
+   POSTGRES_PASSWORD: password
+   POSTGRES_DB: taskdb
+   
+  ports:
+   - "5432:5432"
+   
+# 3.- Declaracion del Volumen Nombrado   
+volumes:
+  maven_cache:
