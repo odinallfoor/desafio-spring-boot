@@ -35,25 +35,8 @@ services:
    
   ports:
    - "8080:8080"
-  # Se asegura que se levante la base de datos primero.
-  depends_on:
-   - db
- # 2.- Servicio de Base de Datos PostgreSQL
- # Base de datos Local.
- db:
-  # Imagen Oficial, Version 14 Ligera
-  image: postgres:14-alpine
-  container_name: task-manager-db
-  
-  # Variables de Entorno para las credenciales de la base de datos.
-  environment:
-   POSTGRES_USER: user
-   POSTGRES_PASSWORD: password
-   POSTGRES_DB: taskdb
-   
-  ports:
-   - "5432:5432"
-   
-# 3.- Declaracion del Volumen Nombrado   
+  command: mvn -q -DskipTests spring-boot:run
+ 
+# 2.- Declaracion del Volumen Nombrado   
 volumes:
   maven_cache:
